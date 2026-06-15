@@ -1118,7 +1118,8 @@ def instantaneous_rate(spiketrains, sampling_period, kernel='auto',
     if pool_spike_trains:
         rate = np.mean(rate, axis=1)
 
-    rate = neo.AnalogSignal(signal=rate,
+    from elephant.objects.rate import TimeSeriesObject, RateObject
+    rate = TimeSeriesObject(signal=rate,
                             sampling_period=sampling_period,
                             units=pq.Hz, t_start=t_start,
                             kernel=kernel_annotation)
@@ -1141,7 +1142,8 @@ def instantaneous_rate(spiketrains, sampling_period, kernel='auto',
                 rate[:, i] *= len(spiketrain) /\
                               (np.mean(rate[:, i]).magnitude * duration)
 
-    return rate
+    analy_obj = RateObject(repr=rate)
+    return analy_obj
 
 
 @deprecated_alias(binsize='bin_size')

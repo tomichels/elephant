@@ -370,10 +370,21 @@ def covariance(binned_spiketrain, binary=False, fast=True):
 
     if fast and binned_spiketrain.sparsity > _SPARSITY_MEMORY_EFFICIENT_THR:
         array = binned_spiketrain.to_array()
-        return np.cov(array)
+        C = np.cov(array)
+    else:
+        C = _covariance_sparse(binned_spiketrain, corrcoef_norm=False)
 
-    return _covariance_sparse(
-        binned_spiketrain, corrcoef_norm=False)
+    if np.ndim(C) >= 2:
+        from elephant.objects.matrix import MatrixObject
+        from elephant.objects.corrcoef import CovarianceObject
+        import quantities as pq
+        repr_obj = MatrixObject(C, mtype=["symmetric", "square"], units=pq.dimensionless)
+        return CovarianceObject(
+            repr=repr_obj,
+            binary=binary,
+            bin_size=binned_spiketrain.bin_size,
+        )
+    return C
 
 
 def correlation_coefficient(binned_spiketrain, binary=False, fast=True):
@@ -478,10 +489,21 @@ def correlation_coefficient(binned_spiketrain, binary=False, fast=True):
 
     if fast and binned_spiketrain.sparsity > _SPARSITY_MEMORY_EFFICIENT_THR:
         array = binned_spiketrain.to_array()
-        return np.corrcoef(array)
+        C = np.corrcoef(array)
+    else:
+        C = _covariance_sparse(binned_spiketrain, corrcoef_norm=True)
 
-    return _covariance_sparse(
-        binned_spiketrain, corrcoef_norm=True)
+    if np.ndim(C) >= 2:
+        from elephant.objects.matrix import MatrixObject
+        from elephant.objects.corrcoef import CorrCoefObject
+        import quantities as pq
+        repr_obj = MatrixObject(C, mtype=["symmetric", "square"], units=pq.dimensionless)
+        return CorrCoefObject(
+            repr=repr_obj,
+            binary=binary,
+            bin_size=binned_spiketrain.bin_size,
+        )
+    return C
 
 
 def corrcoef(*args, **kwargs):
